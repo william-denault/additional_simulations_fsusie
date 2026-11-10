@@ -1,0 +1,3 @@
+"standardize_Y","min_wavelet_noise_variance","max_wavelet_noise_variance","noise_variance_ratio","max_abs_offdiagonal_correlation"
+FALSE,0.0224976816830729,23.3920421165852,1039.75344864912,0.846764278198358
+TRUE,0.311695970023753,1.26759061200426,4.0667532913809,0.822062188183579

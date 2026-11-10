@@ -1,0 +1,31 @@
+Validation performed on 10 November 2026
+
+PASS: simulation dimensions, causal-SNP assignment, exact generating GP
+covariance, target expected PVE, matched genotypes across shape/noise settings,
+zero-CS handling, simulation-wise versus pooled coverage, causal-SNP capture,
+disjoint and complete two-worker partition, checkpoint save/reuse, rejection
+of incompatible settings, and R-level warning capture.
+
+PASS: all four actual methods on one GP dataset (n=100, 60 positions, up to
+200 SNPs, two causal SNPs). No generating covariance or variance was supplied.
+All four fits returned finite PIPs and reported convergence. Independently
+recomputed CS coverage and power agree with the stored metrics. GP_check.rds
+contains this execution check; it is not part of the study results.
+
+Three step/IID datasets (true L=1,2,3) were also completed during development:
+all 12 fits succeeded and reported convergence. The longer development pilot
+was stopped after these completed datasets. Smooth-profile generation was
+checked, but the full factorial simulation has not been executed.
+
+The GP check printed two ELBO-decrease notices from native code despite all
+four fits reporting convergence. Such native console messages may bypass R's
+warning/output capture; retain the Background Job output when reviewing a run.
+Convergence flags and R-level warnings are saved for every fitted dataset.
+
+PDF/PNG coverage and CS-power layouts were rendered and visually checked.
+Partial runs are labelled, missing conditions are left blank, and zero-CS
+simulations do not contribute to observed coverage.
+
+Packages: fsusieR 0.3.59; mvsusieR 0.3.0; susieR 0.16.6; mashr 0.2.79.
+Final main configuration: 50 replicates per each of 12 conditions, split over
+two workers. The complete 600-dataset / 2400-fit study has not been launched.

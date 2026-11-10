@@ -1,0 +1,7 @@
+Pilot validation: main_100_T60_gpL12_stdY_pilot
+PASS: 60 observed points are accepted; installed fSuSiE remaps internally to 64 points.
+PASS: main configuration has 100 replicates per condition, GP length scale 12 and nugget 0.15.
+PASS: all 12 fSuSiE fits use standardize_Y = TRUE (internal ID fSuSiE_standardized; display label fSuSiE).
+PASS: all 12 conditions / 156 fits completed without errors; no shuffled fits.
+Nonconverged pilot fits: 0
+The full study has not been launched. Use scripts/05_launch_two_jobs.R from the RStudio console.

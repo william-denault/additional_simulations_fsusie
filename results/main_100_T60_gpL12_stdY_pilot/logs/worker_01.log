@@ -1,0 +1,26 @@
+2026-11-10 11:59:23 Run main_100_T60_gpL12_stdY_pilot : worker 1 of 1 ; 12 datasets 
+2026-11-10 11:59:23 [1/12] Starting step_iid_L1_rep001 
+2026-11-10 11:59:26 Finished step_iid_L1_rep001 in 3.5 seconds; errors=0; nonconverged=0 
+2026-11-10 11:59:26 [2/12] Starting smooth_iid_L1_rep001 
+2026-11-10 11:59:30 Finished smooth_iid_L1_rep001 in 3.4 seconds; errors=0; nonconverged=0 
+2026-11-10 11:59:30 [3/12] Starting step_gp_L1_rep001 
+2026-11-10 11:59:33 Finished step_gp_L1_rep001 in 3.6 seconds; errors=0; nonconverged=0 
+2026-11-10 11:59:33 [4/12] Starting smooth_gp_L1_rep001 
+2026-11-10 11:59:36 Finished smooth_gp_L1_rep001 in 3.3 seconds; errors=0; nonconverged=0 
+2026-11-10 11:59:37 [5/12] Starting step_iid_L2_rep001 
+2026-11-10 11:59:41 Finished step_iid_L2_rep001 in 4.2 seconds; errors=0; nonconverged=0 
+2026-11-10 11:59:41 [6/12] Starting smooth_iid_L2_rep001 
+2026-11-10 11:59:45 Finished smooth_iid_L2_rep001 in 4.4 seconds; errors=0; nonconverged=0 
+2026-11-10 11:59:45 [7/12] Starting step_gp_L2_rep001 
+2026-11-10 11:59:50 Finished step_gp_L2_rep001 in 4.8 seconds; errors=0; nonconverged=0 
+2026-11-10 11:59:50 [8/12] Starting smooth_gp_L2_rep001 
+2026-11-10 11:59:54 Finished smooth_gp_L2_rep001 in 4.4 seconds; errors=0; nonconverged=0 
+2026-11-10 11:59:54 [9/12] Starting step_iid_L3_rep001 
+2026-11-10 11:59:59 Finished step_iid_L3_rep001 in 5.2 seconds; errors=0; nonconverged=0 
+2026-11-10 11:59:59 [10/12] Starting smooth_iid_L3_rep001 
+2026-11-10 12:00:05 Finished smooth_iid_L3_rep001 in 5.4 seconds; errors=0; nonconverged=0 
+2026-11-10 12:00:05 [11/12] Starting step_gp_L3_rep001 
+2026-11-10 12:00:11 Finished step_gp_L3_rep001 in 6.4 seconds; errors=0; nonconverged=0 
+2026-11-10 12:00:11 [12/12] Starting smooth_gp_L3_rep001 
+2026-11-10 12:00:16 Finished smooth_gp_L3_rep001 in 4.6 seconds; errors=0; nonconverged=0 
+2026-11-10 12:00:16 Worker complete. Run scripts/04_summarize.R after both workers finish. 

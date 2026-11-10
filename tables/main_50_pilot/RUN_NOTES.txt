@@ -1,0 +1,13 @@
+Run: main_50_pilot
+Completed datasets: 12 / 12. Replicates per condition: 1.
+Fit errors: 0. Nonconverged fits: 0.
+Sum of dataset runtimes: 0.5 min (not parallel wall time).
+Projected full configured study: 24.1 min sequential; 12.1 min ideal two-worker time (contention may increase this).
+Table cells: 95% CS coverage / SNP power / SNP FDR at the configured PIP threshold.
+PIP threshold: 0.9
+The compact table pools L=1,2,3 with equal replicate counts when complete. See summary_by_L.csv.
+No CS means undefined coverage, not zero coverage. Read CS availability and size alongside coverage.
+FDR = mean(FP / max(1, discoveries)) across datasets; pooled_fdr is also exported.
+Nonconverged fits are included and flagged; failed fits are excluded from metrics and counted.
+Intervals and Monte Carlo SEs use replicate clusters. Fifty replicates give only coarse precision.
+Packages: fsusieR 0.3.59; mvsusieR 0.3.0; susieR 0.16.6; mashr 0.2.79; ggplot2 4.0.3
