@@ -105,8 +105,8 @@ plot_results <- function(coverage, cfg, folder) {
     "fSuSiE" = "#D62728")
   shapes <- stats::setNames(rep(16, length(palette)), names(palette))
   policy_labels <- c(true_fixed = "True residual covariance, fixed",
-    estimated_empirical_init = "Residual covariance estimated from empirical initialization",
-    estimated_true_init = "Residual covariance estimated from true initialization",
+    estimated_empirical_init = "Residual covariance estimated using empirical covariance as initialization.",
+    estimated_true_init = "Residual covariance estimated using true covariance as initialization.",
     empirical_fixed = "Empirical residual covariance, fixed")
   # Only native reported CSs at the configured primary level (95% by default).
   primary <- coverage[abs(coverage$nominal - cfg$coverage) < 1e-10 &
@@ -117,8 +117,6 @@ plot_results <- function(coverage, cfg, folder) {
   palette <- palette[shown_labels]
   shapes <- shapes[shown_labels]
   nominal_label <- paste0(format(100 * cfg$coverage, trim = TRUE), "%")
-  run_label <- paste0(cfg$n_rep, " replicates per condition",
-    if (cfg$n_rep < 50L) " - PILOT" else "")
   base_theme <- ggplot2::theme_bw(base_size = 12) +
     ggplot2::theme(legend.position = "bottom", legend.text = ggplot2::element_text(size = 10),
       panel.grid.minor = ggplot2::element_blank(),
@@ -126,7 +124,6 @@ plot_results <- function(coverage, cfg, folder) {
       strip.background = ggplot2::element_rect(fill = "#F0F3F7"),
       strip.text = ggplot2::element_text(face = "bold"),
       plot.title = ggplot2::element_text(face = "bold", size = 16),
-      plot.caption = ggplot2::element_text(hjust = 0, size = 9),
       plot.margin = ggplot2::margin(12, 16, 12, 12))
   facet_labels <- ggplot2::labeller(effect_type = c(step = "Step effect", smooth = "Smooth effect"),
     noise_type = c(iid = "IID noise", gp = "GP noise"))
@@ -146,13 +143,11 @@ plot_results <- function(coverage, cfg, folder) {
         d$se <- ifelse(d$total_cs > 0, d$coverage_mcse, NA_real_)
         title <- paste("Observed coverage of", nominal_label, "credible sets")
         ylabel <- "Observed CS coverage (%)"
-        definition <- "Coverage: reported CSs containing a causal SNP / all reported CSs. Zero-CS fits excluded."
       } else {
         d$value <- d$cs_power
         d$se <- d$cs_power_mcse
         title <- paste("Power to capture causal SNPs in", nominal_label, "credible sets")
         ylabel <- "CS power (% of causal SNPs captured)"
-        definition <- "Power: mean fraction of true causal SNPs in at least one reported CS. Zero-CS fits count as zero."
       }
       d$lower <- 100 * pmax(0, d$value - 1.96 * d$se)
       d$upper <- 100 * pmin(1, d$value + 1.96 * d$se)
@@ -170,11 +165,10 @@ plot_results <- function(coverage, cfg, folder) {
         ggplot2::scale_x_continuous(breaks = cfg$true_L) +
         ggplot2::scale_y_continuous(breaks = seq(0, 100, by = 25)) +
         ggplot2::coord_cartesian(xlim = range(cfg$true_L) + c(-0.22, 0.22), ylim = c(0, 100)) +
-        ggplot2::labs(title = title, subtitle = paste("mvSuSiE:", policy_labels[[policy]]),
-          x = "Number of true causal SNPs", y = ylabel, color = NULL, shape = NULL,
-          caption = paste0(run_label, "; fSuSiE reference fits repeated across covariance settings.\n",
-            definition, "\nPoints only; Monte Carlo uncertainty remains available in the tables.",
-            if (metric == "coverage") paste0(" Dashed guide: ", nominal_label, " coverage.") else "")) +
+        ggplot2::labs(title = title,
+          subtitle = paste0("mvSuSiE: ", policy_labels[[policy]],
+            if (cfg$n_rep < 50L) " (PILOT)" else ""),
+          x = "Number of true causal SNPs", y = ylabel, color = NULL, shape = NULL) +
         base_theme + ggplot2::guides(color = ggplot2::guide_legend(nrow = 2, byrow = TRUE),
                                     shape = ggplot2::guide_legend(nrow = 2, byrow = TRUE))
       for (ext in c("png", "pdf"))
