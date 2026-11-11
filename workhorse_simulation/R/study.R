@@ -19,8 +19,27 @@ study_grid = function(cfg){
   g
 }
 
+simulation_config = function(cfg){
+  cfg[setdiff(names(cfg),c("n_rep","show_intervals","fdr_plot_max","pip_thresholds"))]
+}
+
+compatible_signatures = function(a,b){
+  # Old checkpoints included n_rep in their signature. Replicate count only
+  # controls how many independent tasks are requested, not any fitted dataset.
+  a$config$n_rep = NULL
+  b$config$n_rep = NULL
+  identical(a,b)
+}
+
+same_task = function(a,b){
+  # expand.grid stores the total grid dimensions as an attribute; those can
+  # change when extending a run. Compare the actual task values and seed.
+  keys = c("task_id","replicate","L","f_type","noise_type","pve","seed")
+  identical(lapply(keys,function(k) a[[k]]),lapply(keys,function(k) b[[k]]))
+}
+
 study_signature = function(root,cfg){
-  fit_config = cfg[setdiff(names(cfg),c("show_intervals","fdr_plot_max","pip_thresholds"))]
+  fit_config = simulation_config(cfg)
   packages = c("fsusieR","mvsusieR","susieR","mashr")
   list(config=fit_config,
     packages=setNames(vapply(packages,function(p) as.character(utils::packageVersion(p)),""),packages),
@@ -35,13 +54,15 @@ atomic_save = function(x,path){
   # A duplicate worker may have finished the same deterministic task meanwhile.
   if (file.exists(path)){
     old = readRDS(path)
-    if (!identical(old$signature,x$signature) || !identical(old$task,x$task))
+    if (!compatible_signatures(old$signature,x$signature) || !same_task(old$task,x$task))
       stop("A conflicting checkpoint already exists: ",path)
     return(invisible(FALSE))
   }
   if (!file.rename(tmp,path)){
-    if (!file.exists(path) || !identical(readRDS(path)$signature,x$signature))
-      stop("Could not save checkpoint: ",path)
+    if (!file.exists(path)) stop("Could not save checkpoint: ",path)
+    old = readRDS(path)
+    if (!compatible_signatures(old$signature,x$signature) || !same_task(old$task,x$task))
+      stop("Conflicting checkpoint after concurrent save: ",path)
   }
   invisible(TRUE)
 }
@@ -51,7 +72,7 @@ run_one = function(root,cfg,task,signature){
   path = file.path(outdir,paste0(task$task_id,".rds"))
   if (file.exists(path)){
     old = readRDS(path)
-    if (!identical(old$signature,signature))
+    if (!compatible_signatures(old$signature,signature) || !same_task(old$task,task))
       stop("Settings/packages/code differ from saved results. Choose a new run_id in config.R.")
     return("saved")
   }
@@ -195,14 +216,17 @@ summarize_study = function(root,cfg=read_config(root)){
   if (!length(paths)) stop("No saved simulations for ",cfg$run_id)
   records = lapply(paths,readRDS)
   signature = records[[1]]$signature
-  if (!all(vapply(records,function(x) identical(x$signature,signature),logical(1))))
+  if (!all(vapply(records,function(x) compatible_signatures(x$signature,signature),logical(1))))
     stop("The saved run mixes settings, code or package versions.")
-  plot_config = cfg[c("show_intervals","fdr_plot_max","pip_thresholds")]
-  cfg = records[[1]]$config
-  cfg[names(plot_config)] = plot_config
+  if (!identical(simulation_config(cfg),simulation_config(records[[1]]$config)))
+    stop("The requested scientific settings differ from the saved run.")
   expected = study_grid(cfg)
   ids = vapply(records,function(x) x$task$task_id,"")
-  stopifnot(!anyDuplicated(ids),all(ids %in% expected$task_id))
+  if (anyDuplicated(ids) || !all(ids %in% expected$task_id))
+    stop("Saved task IDs fall outside the requested grid. Do not reduce n_rep below saved replicates.")
+  index = match(ids,expected$task_id)
+  if (!all(vapply(seq_along(records),function(i) same_task(records[[i]]$task,expected[index[i],,drop=FALSE]),TRUE)))
+    stop("A saved task's settings or seed do not match the requested grid.")
   metrics = do.call(rbind,lapply(records,function(x){
     d = x$result$summary
     cbind(x$task[rep(1,nrow(d)),,drop=FALSE],d,
@@ -232,7 +256,7 @@ summarize_study = function(root,cfg=read_config(root)){
   plot_study(summary,curves,calibration,cfg,fdir,note)
   minutes = sum(vapply(records,function(x) x$seconds,0.))/60
   report = c(paste("Run:",cfg$run_id),
-    sprintf("Completed datasets: %d / %d. Replicates per condition: %d.",length(records),nrow(expected),cfg$n_rep),
+    sprintf("Completed datasets: %d / %d. Target replicates per condition: %d.",length(records),nrow(expected),cfg$n_rep),
     sprintf("Fit errors: %d. Nonconverged fits: %d. Unknown convergence: %d.",
       sum(!metrics$success),sum(metrics$success & metrics$converged %in% FALSE),
       sum(metrics$success & is.na(metrics$converged))),
@@ -250,5 +274,6 @@ summarize_study = function(root,cfg=read_config(root)){
     paste("Tables:",normalizePath(tdir,winslash="/")),paste("Figures:",normalizePath(fdir,winslash="/")))
   writeLines(report,file.path(tdir,"run_report.txt"))
   cat(paste(report,collapse="\n"),"\n")
-  invisible(list(summary=summary,metrics=metrics,curves=curves,calibration=calibration))
+  invisible(list(summary=summary,metrics=metrics,curves=curves,calibration=calibration,
+    n_completed=length(records),n_expected=nrow(expected),target_replicates=cfg$n_rep,complete=complete))
 }

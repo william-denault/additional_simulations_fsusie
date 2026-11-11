@@ -65,7 +65,7 @@ compact_metrics <- function(status, pips, coverage, cfg, keys) {
 
 method_labels <- function(a) {
   labels <- c(diagonal = "mvSuSiE: diagonal", canonical = "mvSuSiE: canonical",
-               mash = "mvSuSiE: mash mixture", oracle_shape = "mvSuSiE: oracle shape")
+               mash = "mvSuSiE: mash mixture")
   out <- unname(labels[a$prior])
   out[a$method %in% c("fSuSiE_default", "fSuSiE_standardized")] <- "fSuSiE"
   out[a$method == "fSuSiE_shuffled"] <- "fSuSiE: shuffled (IID)"
@@ -75,7 +75,7 @@ method_labels <- function(a) {
 write_reviewer_table <- function(metrics, path, cfg) {
   methods <- unique(metrics[c("method", "prior", "residual")])
   prior_names <- c(diagonal = "Diagonal", canonical = "Canonical",
-                     mash = "mash canonical mixture", oracle_shape = "Oracle shapes",
+                     mash = "mash canonical mixture",
                      functional_default = "Default functional prior")
   residual_names <- c(true_fixed = "True covariance, fixed",
     estimated_empirical_init = "Estimated, empirical initialization",
@@ -101,9 +101,9 @@ write_reviewer_table <- function(metrics, path, cfg) {
 plot_results <- function(coverage, cfg, folder) {
   dir.create(folder, recursive = TRUE, showWarnings = FALSE)
   palette <- c("mvSuSiE: diagonal" = "#8C564B", "mvSuSiE: canonical" = "#1F77B4",
-    "mvSuSiE: mash mixture" = "#9467BD", "mvSuSiE: oracle shape" = "#2CA02C",
+    "mvSuSiE: mash mixture" = "#9467BD",
     "fSuSiE" = "#D62728")
-  shapes <- stats::setNames(c(16, 17, 15, 18, 8), names(palette))
+  shapes <- stats::setNames(rep(16, length(palette)), names(palette))
   policy_labels <- c(true_fixed = "True residual covariance, fixed",
     estimated_empirical_init = "Residual covariance estimated from empirical initialization",
     estimated_true_init = "Residual covariance estimated from true initialization",
@@ -111,8 +111,8 @@ plot_results <- function(coverage, cfg, folder) {
   # Only native reported CSs at the configured primary level (95% by default).
   primary <- coverage[abs(coverage$nominal - cfg$coverage) < 1e-10 &
     (coverage$method %in% c("fSuSiE_default", "fSuSiE_standardized") |
-       coverage$engine == "mvSuSiE"), ]
-  shown_labels <- c(names(palette)[1:4],
+       (coverage$engine == "mvSuSiE" & coverage$prior %in% c("diagonal", "canonical", "mash"))), ]
+  shown_labels <- c(names(palette)[1:3],
     unique(as.character(method_labels(primary[primary$engine == "fSuSiE", ]))))
   palette <- palette[shown_labels]
   shapes <- shapes[shown_labels]
@@ -130,7 +130,7 @@ plot_results <- function(coverage, cfg, folder) {
       plot.margin = ggplot2::margin(12, 16, 12, 12))
   facet_labels <- ggplot2::labeller(effect_type = c(step = "Step effect", smooth = "Smooth effect"),
     noise_type = c(iid = "IID noise", gp = "GP noise"))
-  # Small horizontal offsets separate overlapping intervals; ticks still mark L.
+  # Small horizontal offsets separate overlapping points; ticks still mark L.
   dodge <- ggplot2::position_dodge(width = 0.26)
   for (policy in cfg$residuals) {
     cc <- primary[primary$residual == policy | primary$engine == "fSuSiE", ]
@@ -140,7 +140,7 @@ plot_results <- function(coverage, cfg, folder) {
     for (metric in c("coverage", "cs_power")) {
       d <- cc
       if (metric == "coverage") {
-        # Leave missing values at zero-CS conditions so no point or line segment
+        # Leave missing values at zero-CS conditions so no point
         # implies observed coverage where none can be assessed.
         d$value <- ifelse(d$total_cs > 0, d$cs_coverage, NA_real_)
         d$se <- ifelse(d$total_cs > 0, d$coverage_mcse, NA_real_)
@@ -163,9 +163,6 @@ plot_results <- function(coverage, cfg, folder) {
         g <- g + ggplot2::geom_hline(yintercept = 100 * cfg$coverage,
                                      linetype = "dashed", color = "grey50")
       g <- g +
-        ggplot2::geom_errorbar(ggplot2::aes(ymin = lower, ymax = upper),
-          position = dodge, width = 0.055, alpha = 0.50, na.rm = TRUE) +
-        ggplot2::geom_line(position = dodge, linewidth = 0.7, na.rm = TRUE) +
         ggplot2::geom_point(position = dodge, size = 2.3, na.rm = TRUE) +
         ggplot2::facet_grid(effect_type ~ noise_type, labeller = facet_labels) +
         ggplot2::scale_color_manual(values = palette, drop = FALSE) +
@@ -176,7 +173,7 @@ plot_results <- function(coverage, cfg, folder) {
         ggplot2::labs(title = title, subtitle = paste("mvSuSiE:", policy_labels[[policy]]),
           x = "Number of true causal SNPs", y = ylabel, color = NULL, shape = NULL,
           caption = paste0(run_label, "; fSuSiE reference fits repeated across covariance settings.\n",
-            definition, "\nBars: approximate 95% Monte Carlo intervals.",
+            definition, "\nPoints only; Monte Carlo uncertainty remains available in the tables.",
             if (metric == "coverage") paste0(" Dashed guide: ", nominal_label, " coverage.") else "")) +
         base_theme + ggplot2::guides(color = ggplot2::guide_legend(nrow = 2, byrow = TRUE),
                                     shape = ggplot2::guide_legend(nrow = 2, byrow = TRUE))
@@ -205,10 +202,16 @@ summarize_study <- function(root = getwd(), run_id = load_config(root)$run_id, m
   results <- lapply(files, readRDS)
   if (!all(vapply(results, function(r) identical(r$signature, manifest$signature), logical(1))))
     stop("Mixed checkpoint signatures; do not combine these results.")
+  # Preserve original checkpoint/manifest signatures, then exclude the removed
+  # oracle-shape comparison from every derived table and figure.
+  cfg$priors <- intersect(cfg$priors, c("diagonal", "canonical", "mash"))
+  excluded_fits <- sum(vapply(results, function(r) sum(r$status$prior == "oracle_shape"), numeric(1)))
   status <- do.call(rbind, lapply(results, `[[`, "status"))
+  status <- status[status$prior != "oracle_shape", , drop = FALSE]
   ps <- cs <- list()
   k <- 0L
   for (r in results) for (i in seq_len(nrow(r$status))) {
+    if (r$status$prior[i] == "oracle_shape") next
     if (!r$status$success[i]) next
     k <- k + 1L
     meta <- r$status[i, c("effect_type", "noise_type", "true_L", "replicate", "task_id",
@@ -256,8 +259,8 @@ summarize_study <- function(root = getwd(), run_id = load_config(root)$run_id, m
       cfg$gp_nugget, cfg$noise_sd^2),
     sprintf("Fit errors: %d. Nonconverged fits: %d.", sum(!status$success),
              sum(status$success & !status$converged, na.rm = TRUE)),
-    sprintf("Sum of dataset runtimes: %.1f min (not parallel wall time).", total_seconds / 60),
-    sprintf("Projected full configured study: %.1f min sequential; %.1f min ideal two-worker time (contention may increase this).",
+    sprintf("Sum of original dataset runtimes: %.1f min (not parallel wall time; includes excluded fits).", total_seconds / 60),
+    sprintf("Historical full-run projection including excluded fits: %.1f min sequential; %.1f min ideal two-worker time.",
              expected_main_seconds / 60, expected_main_seconds / 120),
     "Table cells: 95% CS coverage / SNP power / SNP FDR at the configured PIP threshold.",
     paste("PIP threshold:", cfg$table_pip_threshold),
@@ -265,7 +268,8 @@ summarize_study <- function(root = getwd(), run_id = load_config(root)$run_id, m
     "No CS means undefined coverage, not zero coverage. Read CS availability and size alongside coverage.",
     "Plots: number of true causal SNPs versus observed 95% CS coverage or CS power (both in percent).",
     paste0("Plots include fSuSiE (standardize_Y = ", isTRUE(cfg$fsusie_standardize_Y),
-      ") and the four mvSuSiE priors only. Shuffled fits are not plotted."),
+      ") and the three mvSuSiE priors: diagonal, canonical and mash. Shuffled fits are not plotted."),
+    sprintf("Excluded %d saved oracle-shape fits from derived outputs; original checkpoints remain intact.", excluded_fits),
     "Coverage excludes zero-CS fits. CS power is the mean fraction of causal SNPs in the union of reported CSs; zero-CS fits count as zero power.",
     "Plotted values and contributing fit counts are exported in cs_metrics_by_L.csv; the PIP-based table is unchanged.",
     "FDR = mean(FP / max(1, discoveries)) across datasets; pooled_fdr is also exported.",

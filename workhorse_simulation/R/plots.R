@@ -1,14 +1,13 @@
 # Base-R layout adapted to the user's SuSiE-mix simulation figures.
 method_colours = c(fSuSiE="#2489FF",
-  mvSuSiE_diagonal_fixed="#D81B60",mvSuSiE_diagonal_estimated="#D81B60",
-  mvSuSiE_canonical_fixed="#009E73",mvSuSiE_canonical_estimated="#009E73",
-  mvSuSiE_mash_fixed="#E69F00",mvSuSiE_mash_estimated="#E69F00")
+  mvSuSiE_diagonal_fixed="#CC79A7",mvSuSiE_diagonal_estimated="#D81B60",
+  mvSuSiE_canonical_fixed="#56B4E9",mvSuSiE_canonical_estimated="#009E73",
+  mvSuSiE_mash_fixed="#E69F00",mvSuSiE_mash_estimated="#D55E00")
 method_labels = c(fSuSiE="fSuSiE",
   mvSuSiE_diagonal_fixed="mvSuSiE diagonal: V fixed",mvSuSiE_diagonal_estimated="mvSuSiE diagonal: V updated",
   mvSuSiE_canonical_fixed="mvSuSiE canonical: V fixed",mvSuSiE_canonical_estimated="mvSuSiE canonical: V updated",
   mvSuSiE_mash_fixed="mvSuSiE mash: V fixed",mvSuSiE_mash_estimated="mvSuSiE mash: V updated")
-method_pch = setNames(ifelse(grepl("_fixed$",names(method_colours)),1,16),names(method_colours))
-method_lty = setNames(ifelse(grepl("_fixed$",names(method_colours)),2,1),names(method_colours))
+method_pch = setNames(rep(16,length(method_colours)),names(method_colours))
 
 save_figure = function(path,width,height,draw){
   grDevices::pdf(paste0(path,".pdf"),width=width,height=height,useDingbats=FALSE)
@@ -18,7 +17,7 @@ save_figure = function(path,width,height,draw){
 }
 
 panel_figure = function(cfg,title,xlab,ylab,xlim,ylim,xticks,yticks,
-                        draw_panel,note="",reference=NULL,line_legend=FALSE,
+                        draw_panel,note="",reference=NULL,
                         legend_methods=names(method_colours)){
   scenarios = expand.grid(noise_type=cfg$noise_type,f_type=cfg$f_type,stringsAsFactors=FALSE)
   nr = nrow(scenarios)
@@ -50,7 +49,7 @@ panel_figure = function(cfg,title,xlab,ylab,xlim,ylim,xticks,yticks,
   par(fig=c(0,1,0,1),oma=c(0,0,0,0),mar=c(0,0,0,0),new=TRUE,xpd=NA)
   plot.new(); plot.window(c(0,1),c(0,1),xaxs="i",yaxs="i")
   legend(.5,.055,legend=method_labels[legend_methods],col=method_colours[legend_methods],
-    pch=method_pch[legend_methods],lty=if (line_legend) method_lty[legend_methods] else 0,
+    pch=method_pch[legend_methods],lty=0,
     bty="n",ncol=min(2,length(legend_methods)),xjust=.5,yjust=.5,cex=.78)
 }
 
@@ -103,15 +102,15 @@ plot_study = function(summary,curves,calibration,cfg,fdir,note=""){
     draw = function(){
       panel_figure(cfg,paste0("PIP power and FDR (",L," causal SNP",if (L>1) "s" else "",")"),
         "SNP false discovery rate (%)","SNP power (%)",c(-1,100*cfg$fdr_plot_max),c(-3,103),
-        pretty(c(0,100*cfg$fdr_plot_max),5),seq(0,100,25),note=note,line_legend=TRUE,
+        pretty(c(0,100*cfg$fdr_plot_max),5),seq(0,100,25),note=note,
         draw_panel=function(shape,noise,pve){
           d = curves[curves$f_type==shape & curves$noise_type==noise & curves$pve==pve & curves$L==L,,drop=FALSE]
           for (method in methods){
             s = d[d$method==method,,drop=FALSE]
             s = s[order(s$threshold,decreasing=TRUE),,drop=FALSE]
-            lines(100*s$fdr,100*s$power,col=method_colours[method],lty=method_lty[method],lwd=1.4)
+            points(100*s$fdr,100*s$power,col=method_colours[method],pch=16,cex=.5)
             mark = abs(s$threshold-cfg$pip_threshold)<1e-10
-            points(100*s$fdr[mark],100*s$power[mark],col=method_colours[method],pch=method_pch[method],cex=.8)
+            points(100*s$fdr[mark],100*s$power[mark],col=method_colours[method],pch=16,cex=1)
           }
         })
     }
@@ -126,9 +125,6 @@ plot_study = function(summary,curves,calibration,cfg,fdir,note=""){
           d = calibration[calibration$method==method & calibration$f_type==shape &
             calibration$noise_type==noise & calibration$pve==pve,,drop=FALSE]
           abline(0,1,lty=2,col="#333333")
-          ok = is.finite(d$lower) & is.finite(d$upper) & d$upper>d$lower
-          arrows(100*d$mean_pip[ok],100*d$lower[ok],100*d$mean_pip[ok],100*d$upper[ok],
-            angle=90,code=3,length=.035,col=grDevices::adjustcolor(method_colours[method],alpha.f=.6))
           points(100*d$mean_pip,100*d$observed,pch=method_pch[method],col=method_colours[method],cex=.85)
         })
     }

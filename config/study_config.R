@@ -16,7 +16,7 @@ study_config <- list(
   gp_length_fraction = 0.20,  # Length scale = 0.20 * 60 = 12 positions.
   gp_nugget = 0.15,          # V = sd^2 * ((1-nugget)*RBF + nugget*I).
   proxy_copy_probability = 0.98,
-  priors = c("diagonal", "canonical", "mash", "oracle_shape"),
+  priors = c("diagonal", "canonical", "mash"),
   residuals = c("true_fixed", "estimated_empirical_init", "estimated_true_init"),
   # Add "empirical_fixed" above to reproduce the fourth initialization policy.
   estimate_prior_variance = TRUE,

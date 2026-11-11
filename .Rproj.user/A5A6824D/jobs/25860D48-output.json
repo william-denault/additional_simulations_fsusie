@@ -1,1 +1,0 @@
-[2,"Error in eval(quote({ : \r\n  Source the whole script so its project folder can be located.\r\nCalls: .rs.sourceWithProgress ... local -> eval.parent -> eval -> eval -> eval -> eval\r\nExecution halted\r\n"]

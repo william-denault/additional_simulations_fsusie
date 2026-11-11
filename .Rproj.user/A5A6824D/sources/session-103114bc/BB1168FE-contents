@@ -1,0 +1,15 @@
+setwd("C:/Document/Serieux/Travail/Package/susie_small_laptop")
+
+rscript <- file.path(R.home("bin"), "Rscript.exe")
+output <- "results/adaptive_paper_figures"
+
+scripts <- c(
+  "scripts/summarize.R",
+  "scripts/summarize_conditions.R",
+  "scripts/plot_manuscript.R"
+)
+
+for (script in scripts) {
+  status <- system2(rscript, c("--vanilla", script, output))
+  if (status != 0L) stop("Failed: ", script)
+}

@@ -40,7 +40,7 @@ stopifnot(summ$coverage_mean==.75,summ$pooled_coverage==2/3,
 grid = study_grid(cfg)
 odd = grid$task_id[(grid$replicate-1)%%2==0]
 even = grid$task_id[(grid$replicate-1)%%2==1]
-stopifnot(nrow(grid)==400,all(grid$L %in% 1:2),cfg$n_snps==100,
+stopifnot(nrow(grid)==cfg$n_rep*8,all(grid$L %in% 1:2),cfg$n_snps==100,
           ncol(a$X)<=100,length(intersect(odd,even))==0,
           setequal(c(odd,even),grid$task_id))
 check_restart = function(){

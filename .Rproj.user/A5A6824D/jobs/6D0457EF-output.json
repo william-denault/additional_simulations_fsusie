@@ -1,1 +1,0 @@
-[2,"Error in eval(statements[[idx]], envir = globalenv()) : \r\n  Run this launcher inside RStudio, or use scripts 01 and 02 in separate R sessions.\r\nCalls: .rs.sourceWithProgress -> eval -> eval\r\nExecution halted\r\n"]

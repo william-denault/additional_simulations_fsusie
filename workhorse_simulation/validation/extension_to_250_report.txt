@@ -1,0 +1,28 @@
+Extension to 250 replicates per condition, 10 November 2026
+
+The existing study contains 400 completed datasets: 50 replicates for each
+of eight conditions. All stored signatures match the installed generating
+and fitting code, package versions and scientific settings. The 2,800 saved
+fits contain zero fit errors and 24 flagged nonconverged fits; those flags
+and the results remain unchanged.
+
+PASS: the revised runner reused all 400 actual completed checkpoints and
+their MD5 checksums remained unchanged. Refitting was disabled during this
+audit, confirming that completed datasets are genuinely skipped.
+
+PASS: old and new signatures can differ in requested replicate count only.
+Changes to scientific settings, fitting code, package versions or task seeds
+are rejected. The first 50 replicates retain their original seeds; replicates
+51 through 250 have new seeds. Each of two workers skips 200 old datasets
+and runs 800 additional datasets.
+
+PASS: a mixed legacy/new checkpoint fixture is summarized against the current
+250-replicate target rather than the old target stored in its first file.
+Actual sample counts remain correct and incomplete plots are labelled.
+Attempting to reduce the target below already saved replicate numbers fails.
+
+Target: 2,000 total datasets (14,000 fits). Additional work: 1,600 datasets
+(11,200 fits). No new full-study simulations were launched during setup.
+
+The run ID remains workhorse_50_P100_L12_T60_RV for checkpoint continuity;
+the 50 in its name is historical. config.R now specifies n_rep=250L.

@@ -5,7 +5,7 @@ study has **100 replicates in each of 12 conditions**: step or smooth effects,
 IID or within-person GP noise, and 1, 2, or 3 true causal SNPs. Every method
 fits the same upper limit, **L = 5**, so it is not supplied the true causal count.
 The current run is `main_100_T60_gpL12_stdY`: **60 profile points**, GP length scale
-**12 points (20% of the profile)**, and **1,200 datasets / 15,600 method fits**.
+**12 points (20% of the profile)**, and **1,200 datasets / 12,000 included method fits**.
 fSuSiE uses `standardize_Y = TRUE` explicitly and is labeled simply **fSuSiE**.
 The shared fitting limit remains L = 5 and default CS filtering is retained.
 The completed 32-point, 50-replicate results remain under `main_50`; its previous
@@ -81,7 +81,7 @@ or CS power, expressed as a percentage. Separate figures for each mvSuSiE residu
 policy keep the number of curves per panel manageable.
 The fSuSiE reference curves are repeated across these figures; these are the
 same fits, not separate fSuSiE covariance configurations.
-Plots show only fSuSiE and the four mvSuSiE priors. The shuffled fSuSiE
+Plots show only fSuSiE and the three mvSuSiE priors. The shuffled fSuSiE
 diagnostic remains in the saved results and tables but is excluded from plots.
 It is disabled for new runs in the current configuration to avoid unnecessary fits.
 
@@ -131,17 +131,17 @@ Neither worker assignment nor execution order changes the data or the seeds.
 
 ## Comparisons that address the reviewer
 
-Four effect priors are crossed with three residual-covariance policies:
+Three effect priors are crossed with three residual-covariance policies:
 
 | Prior | Construction |
 |---|---|
 | diagonal | Single diagonal effect covariance, as in the prior-specification vignette |
 | canonical | Standard canonical covariance mixture |
 | mash | Weights/scales fitted to this locus over canonical covariance patterns |
-| oracle_shape | Rank-one covariance matrices from the true effect shapes, without true SNP identities |
 
-The oracle is a diagnostic reference. Opposite-sign effects give the same
-rank-one covariance and are deduplicated. The mash example learns weights/scales
+The former oracle-shape comparison has been removed from the active configuration,
+derived tables and figures. Original checkpoints retain the historical fits for
+reproducibility; the summarizer excludes those fits before aggregation. The mash example learns weights/scales
 over supplied canonical patterns, not new spatial covariance matrices. Its
 small-locus training sample is a limitation; this is not a benchmark of a
 genome-wide learned mvSuSiE prior.
@@ -151,6 +151,15 @@ genome-wide learned mvSuSiE prior.
 | true_fixed | True generating V | No |
 | estimated_empirical_init | Package default, cov(Y) | Yes |
 | estimated_true_init | True generating V | Yes |
+
+`estimated_true_init` supplies the generating noise covariance as the starting
+matrix and sets `estimate_residual_variance=TRUE`, so mvSuSiE can change it during
+fitting. This is a simulation-only initialization diagnostic. It is distinct
+from the removed oracle-shape effect prior. It is implemented in `fit_method()`
+in `R/study.R`: the update flag is selected by the policy, `dat$V` is supplied for
+`true_fixed` and `estimated_true_init`, and the argument list is passed to
+`mvsusieR::mvsusie`. The separate current `workhorse_simulation` project supplies
+`residual_variance=NULL` for all mvSuSiE fits instead.
 
 An optional fourth policy, `empirical_fixed`, fixes the package's initial cov(Y).
 Add it to `residuals` to include the complete initialization/fixing comparison
@@ -165,7 +174,7 @@ the package's default mixture-weight updating. The switch is exposed in config
 if a separate sensitivity analysis with weight updating is desired.
 
 X is standardized before simulation. `standardize = FALSE` in mvSuSiE prevents
-its additional phenotype-SD rescaling from altering the supplied oracle shapes;
+its additional phenotype-SD rescaling from altering the supplied effect covariance matrices;
 intercept fitting remains on. All three residual policies use identical settings.
 See the [mvSuSiE function documentation](https://stephenslab.github.io/mvsusieR/reference/mvsusie.html)
 and [prior examples](https://stephenslab.github.io/mvsusieR/articles/prior_specification.html).

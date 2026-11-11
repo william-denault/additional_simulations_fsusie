@@ -23,6 +23,6 @@ cfg = read_config(.project_root)
 for (worker in 1:2){
   script = sprintf("%02d_run_worker_%d.R",worker,worker)
   rstudioapi::jobRunScript(path=file.path(.project_root,script),
-    name=paste(cfg$run_id,"worker",worker),workingDir=.project_root,
+    name=paste(cfg$run_id,paste0("[",cfg$n_rep," reps]"),"worker",worker),workingDir=.project_root,
     importEnv=FALSE,exportEnv="")
 }
