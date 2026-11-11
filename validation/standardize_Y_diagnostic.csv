@@ -1,5 +1,0 @@
-"standardize_Y","filter_cs","n_cs","covered_cs","false_cs","cs_power","converged","sets"
-FALSE,FALSE,9,3,6,1,TRUE,"1; 3; 9; 6; 5; 11; 2; 8; 7"
-TRUE,FALSE,3,3,0,1,TRUE,"3,4; 1; 9"
-FALSE,TRUE,9,3,6,1,TRUE,"1; 3; 9; 6; 5; 11; 2; 8; 7"
-TRUE,TRUE,3,3,0,1,TRUE,"3,4; 1; 9"

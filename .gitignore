@@ -1,0 +1,19 @@
+# Local R / RStudio state
+.Rproj.user/
+.Rhistory
+.RData
+.Ruserdata
+
+# Only the completed covariance benchmark is kept in the active repository.
+/results/*
+!/results/main_100_T60_gpL12_stdY/
+/tables/*
+!/tables/main_100_T60_gpL12_stdY/
+/figures/*
+!/figures/main_100_T60_gpL12_stdY/
+/archive/
+/config/archive/
+
+# Scratch and local exports; raw checkpoints are retained.
+*.tmp
+Rplots.pdf

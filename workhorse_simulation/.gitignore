@@ -1,6 +1,16 @@
-results/
-tables/
-figures/
+# Keep the completed study's checkpoints, compact tables, and figures.
+/results/*
+!/results/workhorse_50_P100_L12_T60_RV/
+/tables/*
+!/tables/workhorse_50_P100_L12_T60_RV/
+/figures/*
+!/figures/workhorse_50_P100_L12_T60_RV/
+
+# This large CSV is reproducible from the compact RDS checkpoints.
+/tables/**/PIPs_per_simulation.csv
+/archive/
+/validation/extend_*/
 .Rproj.user/
 .Rhistory
 .RData
+.Ruserdata

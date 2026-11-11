@@ -1,0 +1,15 @@
+Run: workhorse_50_P100_L12_T60_RV
+Completed datasets: 2000 / 2000. Target replicates per condition: 250.
+Fit errors: 0. Nonconverged fits: 154. Unknown convergence: 0.
+Dataset runtime sum: 1117.6 min; projected full sequential run: 1117.6 min; ideal two workers: 558.8 min.
+No true residual covariance is supplied: mvSuSiE starts at cov(Y), with updating TRUE or FALSE for each of three priors.
+fSuSiE uses standardize_Y=TRUE. All methods use L_fit=10 (true L is not supplied).
+Coverage: mean per-simulation fraction of CSs containing a causal SNP; simulations with no CS are excluded.
+CS power: mean fraction of causal SNPs in the union of reported CSs; no CS gives power zero.
+PIP FDR: mean of FP/max(1,discoveries) across simulations, separately from CS coverage/power.
+Failed fits are excluded from accuracy metrics; nonconverged fits remain included and flagged.
+Mean +/- 1.96 Monte Carlo SE is exported; intervals are approximate and coarse near boundaries.
+Check CS availability/size, convergence and failures alongside coverage.
+Packages: fsusieR 0.3.59; mvsusieR 0.3.0; susieR 0.16.6; mashr 0.2.79
+Tables: C:/Document/Serieux/Travail/Data_analysis_and_papers/additional_simulations_fsusie/workhorse_simulation/tables/workhorse_50_P100_L12_T60_RV
+Figures: C:/Document/Serieux/Travail/Data_analysis_and_papers/additional_simulations_fsusie/workhorse_simulation/figures/workhorse_50_P100_L12_T60_RV

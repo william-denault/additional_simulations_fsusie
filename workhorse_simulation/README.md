@@ -27,9 +27,9 @@ Required packages: `susieR`, `fsusieR`, `mvsusieR`, `mashr`; `rstudioapi` for th
 
 ## Study settings
 
-Edit `config.R` before starting. The study now targets **250 replicates for each of 8 conditions**: **1 or 2 causal SNPs**; step or smooth effects; IID or GP noise. This gives **2,000 datasets and 14,000 fits** (seven methods per dataset). The completed first 50 replicates per condition (400 datasets) are reused, so this extension adds **200 replicates per condition: 1,600 datasets and 11,200 fits**.
+The completed study has **250 replicates for each of 8 conditions**: **1 or 2 causal SNPs**; step or smooth effects; IID or GP noise. This gives **2,000 datasets and 14,000 fits** (seven methods per dataset). To regenerate the tables and plots, source `04_summarize_and_plot.R`; no refitting is needed.
 
-Each of the two workers handles 125 replicates per condition in total: it skips its 200 completed datasets and runs 800 additional datasets, with one numerical thread requested per worker. The existing run ID remains **`workhorse_50_P100_L12_T60_RV`** to preserve and reuse its checkpoints. The `50` in that folder name is historical; `n_rep=250L` in `config.R` controls the current target. RStudio job names also show `[250 reps]`.
+The two workers split replicates by parity, with one numerical thread requested per worker. At the current target, each worker skips its 1,000 completed datasets. The run ID remains **`workhorse_50_P100_L12_T60_RV`** to preserve checkpoint compatibility. The `50` in that folder name is historical; `n_rep=250L` in `config.R` controls the target. RStudio job names also show `[250 reps]`.
 
 - 100 individuals sampled from all available rows of `susieR::N3finemapping$X`, using its **first 100 SNP columns**, as requested. This is controlled by `n_snps=100L` in `config.R`. Monomorphic columns in the sample are removed, while original SNP labels are retained.
 - 60 ordered positions. Each causal SNP affects a randomly placed block of 40 positions. Step effects equal 2 within the block. Smooth effects use a raised cosine bump, `1.2 * (1 - cos(t)) / 2`, with zero values at the block endpoints. This avoids introducing step discontinuities into the smooth condition.
@@ -94,7 +94,9 @@ Rerunning a worker skips its saved datasets. Code hashes, package versions, scie
 
 **Choose a new `run_id` if you change scientific simulation/fitting settings or packages.** Changing plot display settings or the PIP curve threshold grid does not require refitting. Do not reduce `n_rep` below saved replicate numbers. The summarizer uses the current target and includes both old and new checkpoints; plots remain labelled `PARTIAL RUN` until that target is reached. Each table cell reports its actual number of successful fits.
 
-The prior `workhorse_50_T60_PVE20` run was stopped before this revision. Its completed checkpoints remain in their original folder. The new run ID prevents mixing those 200-SNP, four-method results with the new 100-SNP, seven-method study. A copy of the previous scripts is kept under `archive/before_P100_L12_RV/`.
+The superseded `workhorse_50_T60_PVE20` run, old source backups, and generated validation-run outputs were moved outside this repository during cleanup. Their original paths and checksums are recorded under `../../additional_simulations_fsusie_archive/cleanup_2026-11-11/`. The current 100-SNP, seven-method study's checkpoints remain in their original folder and are never mixed with those older results.
+
+Current checkpoints, compact tables, and figures are eligible for version control. The large `PIPs_per_simulation.csv` export remains local and is regenerated from the RDS checkpoints. RStudio session state and future pilot/validation outputs are ignored.
 
 To restart after closing RStudio, stopping a job or rebooting, open the project and source `05_launch_two_jobs.R` again. Finished datasets are skipped; an interrupted dataset is recomputed. Checkpoints are written to temporary files and renamed only after the complete result is saved, so an interrupted write is not mistaken for a completed dataset. There are no persistent locks to clear. Do not delete saved replicate checkpoints to resume. Stop old workers before launching replacements to avoid duplicate computation.
 
